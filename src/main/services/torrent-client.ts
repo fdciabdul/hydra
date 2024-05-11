@@ -77,10 +77,20 @@ export class TorrentClient {
       "torrent-client",
       "main.py"
     );
+    
+    const spawnPython = (pythonCommand: string) => {
+      cp.spawn(pythonCommand, [scriptPath, ...commonArgs], {
+        stdio: "inherit",
+      }).on('error', (err : any) => {
+        if (err.code === 'ENOENT' && pythonCommand === 'python3') {
+          spawnPython('python'); 
+        } else {
+          console.error(`Failed to spawn Python process: ${err.message}`);
+        }
+      });
+    };
 
-    cp.spawn("python3", [scriptPath, ...commonArgs], {
-      stdio: "inherit",
-    });
+    spawnPython('python3');
   }
 
   private static getTorrentStateName(state: TorrentState) {
